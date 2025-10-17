@@ -1,12 +1,11 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 from typing import Optional
 from .models import Category, Status
 import uuid
 
 
 class Marker_model(BaseModel):
-    uid: uuid.UUID
-    url: HttpUrl
+    url: str
     title: str
     description: Optional[str] | None = None
     category: Optional[Category] | None = None
@@ -14,7 +13,7 @@ class Marker_model(BaseModel):
 
 
 class Marker_Create_model(BaseModel):
-    url: HttpUrl
+    url: str
     title: str
     description: Optional[str] | None = None
     category: Optional[Category] | None = None
@@ -22,7 +21,7 @@ class Marker_Create_model(BaseModel):
 
 
 class MarkerUpdate_model(BaseModel):
-    url: HttpUrl
+    url: str
     title: str
     description: Optional[str] | None = None
     category: Optional[Category] | None = None
