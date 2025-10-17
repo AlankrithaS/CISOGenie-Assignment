@@ -1,14 +1,19 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,HttpUrl
 from typing import Optional
+from .models import Category, Status
+import uuid
 
 class Marker_model(BaseModel):
-    id: int
-    url: str
+    uid: uuid.UUID
+    url: HttpUrl
     title: str
     description: Optional[str] | None = None
-    category: Optional[str] | None = None
-    status: Optional[str] | None = "active"
+    category: Optional[Category] | None = None
+    status: Optional[Status] | None = "active"
     
 class BookMarkerUpdate_model(BaseModel):
-    category: Optional[str] | None = None
-    status: Optional[str] | None = "active"
+    url:HttpUrl
+    title:str
+    description: Optional[str] | None = None
+    category: Optional[Category] | None = None
+    status: Optional[Status] | None = "active"
