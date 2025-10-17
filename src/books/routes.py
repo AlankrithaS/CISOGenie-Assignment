@@ -1,53 +1,56 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 from fastapi.exceptions import HTTPException
 from typing import List
-
-from .marker_data import bookmarks
-from .schemas import Marker_model, BookMarkerUpdate_model
-
+from sqlmodel.ext.asyncio.session import AsyncSession
+# from .marker_data import bookmarks
+from .schemas import Marker_model, MarkerUpdate_model
+from .service import BookService
+from .models import Marker_model
+from db.main import get_session
 
 book_router = APIRouter()
+book_service = BookService()
 
 
 @book_router.get("/", response_model=List[Marker_model])
-async def get_bookmarks():
+async def get_bookmarks(session: AsyncSession = Depends(get_session)):
+    bookmarks = book_service.get_bookmarks(session)
     return bookmarks
 
 
-@book_router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_a_bookmark(book_data: Marker_model) -> dict:
-    new_bookmark = book_data.model_dump()
-    bookmarks.append(new_bookmark)
-    return {"message": "Bookmark created successfully", "bookmark": new_bookmark}
+@book_router.post("/", status_code=status.HTTP_201_CREATED, response_model=Marker_model)
+async def create_a_bookmark(book_data: Marker_model, session: AsyncSession = Depends(get_session)) -> dict:
+    new_bookmark = book_service.create_bookmark(book_data, session)
+    return new_bookmark
 
 
 @book_router.get("/{id}", response_model=Marker_model)
-async def find_bookmark(id: int) -> dict:
-    for bookmark in bookmarks:
-        if bookmark["id"] == id:
-            return bookmark
-
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail=f"Bookmark with id {id} not found"
-    )
+async def find_bookmark(book_uid: int, session: AsyncSession = Depends(get_session)) -> dict:
+    book = book_service.get_bookmark_by_id(book_uid, session)
+    if book:
+        return
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Bookmark with id {id} not found")
 
 
 @book_router.patch("/{id}", response_model=Marker_model)
-async def update_bookmark(id: int, book_update_data: BookMarkerUpdate_model) -> dict:
-    for index, bookmark in enumerate(bookmarks):
-        if bookmark["id"] == id:
-            updated_data = book_update_data.model_dump(exclude_unset=True)
-            bookmarks[index].update(updated_data)
-            return bookmarks[index]
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f"Bookmark with id {id} not found to update")
+async def update_bookmark(book_uid: int, book_update_data: MarkerUpdate_model, session: AsyncSession = Depends(get_session)) -> dict:
+    update_book = book_service.update_bookmark(
+        book_uid, book_update_data, session)
+    if update_book:
+        return update_book
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Bookmark with id {id} not found to update")
 
 
 @book_router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_bookmark(id: int):
-    for index, bookmark in enumerate(bookmarks):
-        if bookmark["id"] == id:
-            bookmarks.pop(index)
-            return 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f"Bookmark with id {id} not found to delete")
+async def delete_bookmark(book_uid: int, session: AsyncSession = Depends(get_session)):
+    book_to_delete = await book_service.delete_book(book_uid, session)
+
+    if book_to_delete:
+        return None
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Bookmark with id {id} not found to delete")
