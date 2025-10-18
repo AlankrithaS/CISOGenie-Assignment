@@ -17,9 +17,9 @@ class BookService:
         result = result.model_dump()
         if result is None:
             return {"error": "Bookmark not found"}
-        print("=====================================")
-        print(result)
-        print("=====================================")
+        # print("=====================================")
+        # print(result)
+        # print("=====================================")
         return Marker_Create_model.model_validate(result).model_dump()
 
     async def create_bookmark(self, book_data: Marker_Create_model, session: AsyncSession):
@@ -40,10 +40,18 @@ class BookService:
             session.commit()
             return book_to_update
 
-    # async def delete_bookmark(self, book_uid: str, session: AsyncSession):
-    #     book_to_delete = await self.get_bookmark_by_id(book_uid, session)
-    #     book_to_delete = Marker_model(**book_to_delete)
-    #     if book_to_delete is not None:
-    #         session.delete(book_to_delete)
-    #     else:
-    #         return None
+    async def delete_bookmark(self, book_uid: str, session: AsyncSession):
+        # book_to_delete = await self.get_bookmark_by_id(book_uid, session)
+        statement = select(Marker_model).where(Marker_model.uid == book_uid)
+        result = session.exec(statement)
+        book_to_delete = result.first()
+        # book_to_delete = Marker_model(**book_to_delete)
+        print("=====================================")
+        print(book_to_delete)
+        print("=====================================")
+        if book_to_delete is not None:
+            session.delete(book_to_delete)
+            session.commit()
+            return {"message":"succesfully deleted"}
+        else:
+            return None

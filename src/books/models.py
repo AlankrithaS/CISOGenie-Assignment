@@ -1,5 +1,4 @@
 from sqlmodel import SQLModel, Field
-from pydantic import HttpUrl
 from typing import Optional
 from enum import Enum
 import uuid
@@ -19,7 +18,7 @@ class Status(str, Enum):
 class Marker_model(SQLModel, table=True):
     __tablename__ = "BookMarkersTBL"
 
-    uid: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
+    uid: uuid.UUID = Field(default_factory=uuid.uuid4,primary_key=True, index=True)
     url: str = Field(max_length=1048)
     title: str
     description: Optional[str] = Field(default=None, max_length=255)
@@ -28,3 +27,4 @@ class Marker_model(SQLModel, table=True):
 
     def __repr__(self):
         return f"<Book {self.title}>"
+

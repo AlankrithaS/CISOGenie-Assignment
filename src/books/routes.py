@@ -46,11 +46,11 @@ async def update_bookmark(id: str, book_update_data: MarkerUpdate_model, session
                             detail=f"Bookmark with id {id} not found to update")
 
 
-# @book_router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-# async def delete_bookmark(id: str, session: AsyncSession = Depends(get_session)):
-#     book_to_delete = await book_service.delete_bookmark(id, session)
-#     if book_to_delete:
-#         return None
-#     else:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-#                             detail=f"Bookmark with id {id} not found to delete")
+@book_router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_bookmark(id: str, session: AsyncSession = Depends(get_session)):
+    book_to_delete = await book_service.delete_bookmark(id, session)
+    if book_to_delete:
+        return {"message":"succesfully deleted"}
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Bookmark with id {id} not found to delete")
